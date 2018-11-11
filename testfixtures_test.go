@@ -26,6 +26,7 @@ type databaseTest struct {
 	connEnv    string
 	schemaFile string
 	helper     Helper
+	subtest    string
 }
 
 var databases = []databaseTest{}
@@ -36,59 +37,65 @@ func TestLoadFixtures(t *testing.T) {
 	}
 
 	for _, database := range databases {
-		connString := os.Getenv(database.connEnv)
-
-		fmt.Printf("Test for %s\n", database.name)
-
-		db, err := sql.Open(database.name, connString)
-		if err != nil {
-			log.Fatalf("Failed to connect to database: %v\n", err)
+		subtestName := database.subtest
+		if subtestName == "" {
+			subtestName = database.name
 		}
+		t.Run(subtestName, func(t *testing.T) {
+			connString := os.Getenv(database.connEnv)
 
-		defer db.Close()
+			t.Logf("Test for %s\n", database.name)
 
-		if err = db.Ping(); err != nil {
-			log.Fatalf("Failed to ping database: %v\n", err)
-		}
-
-		var batches [][]byte
-
-		data, err := ioutil.ReadFile(database.schemaFile)
-		if err != nil {
-			log.Fatalf("Could not read file %s: %v\n", database.schemaFile, err)
-		}
-
-		if h, ok := database.helper.(batchSplitter); ok {
-			batches = append(batches, bytes.Split(data, h.splitter())...)
-		} else {
-			batches = append(batches, data)
-		}
-
-		for _, b := range batches {
-			if _, err = db.Exec(string(b)); err != nil {
-				t.Fatalf("Failed to create schema: %v\n", err)
+			db, err := sql.Open(database.name, connString)
+			if err != nil {
+				t.Fatalf("Failed to connect to database: %v\n", err)
 			}
-		}
 
-		testLoadFixtures(t, db, database.helper)
-		testLoadFixtureFiles(t, db, database.helper)
+			defer db.Close()
 
-		// generate fixtures from database
-		dir, err := ioutil.TempDir(os.TempDir(), "testfixtures_test")
-		if err != nil {
-			t.Error(err)
-		}
-		if err := GenerateFixtures(db, database.helper, dir); err != nil {
-			t.Error(err)
-		}
+			if err = db.Ping(); err != nil {
+				t.Fatalf("Failed to ping database: %v\n", err)
+			}
 
-		// should be able to load generated fixtures
-		context, err := NewFolder(db, database.helper, dir)
-		if err != nil {
-			t.Error(err)
-		} else if err := context.Load(); err != nil {
-			t.Error(err)
-		}
+			var batches [][]byte
+
+			data, err := ioutil.ReadFile(database.schemaFile)
+			if err != nil {
+				t.Fatalf("Could not read file %s: %v\n", database.schemaFile, err)
+			}
+
+			if h, ok := database.helper.(batchSplitter); ok {
+				batches = append(batches, bytes.Split(data, h.splitter())...)
+			} else {
+				batches = append(batches, data)
+			}
+
+			for _, b := range batches {
+				if _, err = db.Exec(string(b)); err != nil {
+					t.Fatalf("Failed to create schema: %v\n", err)
+				}
+			}
+
+			testLoadFixtures(t, db, database.helper)
+			testLoadFixtureFiles(t, db, database.helper)
+
+			// generate fixtures from database
+			dir, err := ioutil.TempDir(os.TempDir(), "testfixtures_test")
+			if err != nil {
+				t.Error(err)
+			}
+			if err := GenerateFixtures(db, database.helper, dir); err != nil {
+				t.Error(err)
+			}
+
+			// should be able to load generated fixtures
+			context, err := NewFolder(db, database.helper, dir)
+			if err != nil {
+				t.Error(err)
+			} else if err := context.Load(); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
 

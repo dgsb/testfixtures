@@ -9,10 +9,10 @@ import (
 func init() {
 	databases = append(databases,
 		databaseTest{
-			"mssql",
-			"SQLSERVER_CONN_STRING",
-			"testdata/schema/sqlserver.sql",
-			&SQLServer{},
+			name:       "mssql",
+			connEnv:    "SQLSERVER_CONN_STRING",
+			schemaFile: "testdata/schema/sqlserver.sql",
+			helper:     &SQLServer{},
 		},
 	)
 }

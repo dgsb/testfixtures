@@ -9,10 +9,10 @@ import (
 func init() {
 	databases = append(databases,
 		databaseTest{
-			"mysql",
-			"MYSQL_CONN_STRING",
-			"testdata/schema/mysql.sql",
-			&MySQL{},
+			name:       "mysql",
+			connEnv:    "MYSQL_CONN_STRING",
+			schemaFile: "testdata/schema/mysql.sql",
+			helper:     &MySQL{},
 		},
 	)
 }

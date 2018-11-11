@@ -9,10 +9,10 @@ import (
 func init() {
 	databases = append(databases,
 		databaseTest{
-			"oci8",
-			"ORACLE_CONN_STRING",
-			"testdata/schema/oracle.sql",
-			&Oracle{},
+			name:       "oci8",
+			connEnv:    "ORACLE_CONN_STRING",
+			schemaFile: "testdata/schema/oracle.sql",
+			helper:     &Oracle{},
 		},
 	)
 }

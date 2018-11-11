@@ -9,16 +9,18 @@ import (
 func init() {
 	databases = append(databases,
 		databaseTest{
-			"postgres",
-			"PG_CONN_STRING",
-			"testdata/schema/postgresql.sql",
-			&PostgreSQL{},
+			name:       "postgres",
+			connEnv:    "PG_CONN_STRING",
+			schemaFile: "testdata/schema/postgresql.sql",
+			helper:     &PostgreSQL{},
+			subtest:    "",
 		},
 		databaseTest{
-			"postgres",
-			"PG_CONN_STRING",
-			"testdata/schema/postgresql.sql",
-			&PostgreSQL{UseAlterConstraint: true},
+			name:       "postgres",
+			connEnv:    "PG_CONN_STRING",
+			schemaFile: "testdata/schema/postgresql.sql",
+			helper:     &PostgreSQL{UseAlterConstraint: true},
+			subtest:    "postgres with alter constraint",
 		},
 	)
 }

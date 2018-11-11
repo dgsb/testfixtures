@@ -8,9 +8,9 @@ import (
 
 func init() {
 	databases = append(databases, databaseTest{
-		"sqlite3",
-		"SQLITE_CONN_STRING",
-		"testdata/schema/sqlite.sql",
-		&SQLite{},
+		name:       "sqlite3",
+		connEnv:    "SQLITE_CONN_STRING",
+		schemaFile: "testdata/schema/sqlite.sql",
+		helper:     &SQLite{},
 	})
 }
